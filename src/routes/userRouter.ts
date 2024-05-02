@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { md5 } from 'js-md5';
 import { validate } from '../middleware/validation';
-import { userLoginSchema } from '../schemas/userSchemas';
+import { userLoginSchema, userRegisterSchema } from '../schemas/userSchemas';
 import * as jwt from 'jsonwebtoken';
 
 import { PrismaClient } from '@prisma/client';
@@ -36,6 +36,33 @@ userRouter.post(
     if (!user) {
       res.status(401);
       return res.send({ message: 'Auth data is invalid' });
+    }
+    res.send({
+      jwt: jwt.sign({ username }, process.env.JWT_SECRET as string),
+    });
+  }
+);
+
+userRouter.post(
+  '/register',
+  validate(userRegisterSchema),
+  async (req: Request, res: Response) => {
+    const {
+      body: { username, password, firstName, lastName, email },
+    } = req;
+    try {
+      await prisma.users.create({
+        data: {
+          username,
+          password: md5(password),
+          firstName,
+          lastName,
+          email,
+        },
+      });
+    } catch {
+      res.status(409);
+      return res.send({ message: 'Username or email already in use.' });
     }
     res.send({
       jwt: jwt.sign({ username }, process.env.JWT_SECRET as string),
