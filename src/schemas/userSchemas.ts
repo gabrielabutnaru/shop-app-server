@@ -6,9 +6,11 @@ export const userLoginSchema = z.object({
 });
 
 export const userRegisterSchema = z.object({
-  firstName: z.string(),
-  lastName: z.string(),
-  email: z.string(),
-  username: z.string(),
-  password: z.string(),
+  firstName: z.string().min(3),
+  lastName: z.string().min(3),
+  email: z.string().email(),
+  username: z.string().min(4),
+  password: z
+    .string()
+    .regex(/^(?=.*\d)(?=.*[!@#$%^&* _.])(?=.*[a-z])(?=.*[A-Z]).{8,}$/),
 });
